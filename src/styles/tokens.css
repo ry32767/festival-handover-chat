@@ -1,0 +1,31 @@
+:root {
+  --color-ink: #17211d;
+  --color-canvas: #f3f6f4;
+  --color-surface: #ffffff;
+  --color-signal: #b42335;
+  --color-signal-strong: #8f1828;
+  --color-support: #197066;
+  --color-muted: #58665f;
+  --color-rule: #c7d1cc;
+  --color-error-bg: #fff1f2;
+  --color-success-bg: #edf8f4;
+  --color-focus: #125eaa;
+
+  --font-display: "Yu Mincho", "Hiragino Mincho ProN", serif;
+  --font-body: "BIZ UDPGothic", "Yu Gothic UI", "Yu Gothic", sans-serif;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --border: 1px solid var(--color-rule);
+  --shadow-focus: 0 0 0 3px color-mix(in srgb, var(--color-focus) 28%, transparent);
+  --motion-fast: 140ms ease-out;
+}

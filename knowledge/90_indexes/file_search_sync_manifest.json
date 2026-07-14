@@ -1,0 +1,52 @@
+{
+  "synced_at": "2026-07-13T16:00:02.824Z",
+  "store_name": "fileSearchStores/festivalhandover20260713t15-59xahndfwgh6",
+  "file_count": 9,
+  "files": [
+    {
+      "path": "knowledge\\40_compilations\\02_schedule.md",
+      "source_id": "COMP-DETAIL-002",
+      "sha256": "bf3f3a7d63b4ae29ab3398ac3ba67a4b9696edbb211806b5a82787e338bf442a"
+    },
+    {
+      "path": "knowledge\\40_compilations\\03_classroom_booths.md",
+      "source_id": "COMP-DETAIL-003",
+      "sha256": "3f32bb9905b87ea85a741e18d7a8495d9fed9e7c8f39906ea630ae27f0d94f53"
+    },
+    {
+      "path": "knowledge\\40_compilations\\04_food_and_first_year.md",
+      "source_id": "COMP-DETAIL-004",
+      "sha256": "d3adb8177aa0bb2b05c7be673f5f56b19027256faba445a28b69c4853ae29960"
+    },
+    {
+      "path": "knowledge\\40_compilations\\06_exhibition_and_stages.md",
+      "source_id": "COMP-DETAIL-006",
+      "sha256": "791ad60469c0fc6c0b146fe4f990d7bbae38d3b9265017572aa08b4d0c4fb320"
+    },
+    {
+      "path": "knowledge\\40_compilations\\07_layout_and_accounting.md",
+      "source_id": "COMP-DETAIL-007",
+      "sha256": "0dedc2bcd947e0615498be64a0b6d7fdc406376cbf18b71f634fd871989d2a86"
+    },
+    {
+      "path": "knowledge\\40_compilations\\09_feedback_and_minutes.md",
+      "source_id": "COMP-DETAIL-009",
+      "sha256": "0af2b2b123f6597b02cc42c4beaff8c4f7219450d82770a857ba2915faa5d73e"
+    },
+    {
+      "path": "knowledge\\40_compilations\\glossary.md",
+      "source_id": "COMP-GLOSSARY-001",
+      "sha256": "4e8e478dec342b598c218132b83122bf335fc75d32362a3932c56bc520952a61"
+    },
+    {
+      "path": "knowledge\\40_compilations\\master.md",
+      "source_id": "COMP-MASTER-001",
+      "sha256": "56484d5219630100a80bc418819e918a76c41904a012af06d7be1ec0af395add"
+    },
+    {
+      "path": "knowledge\\40_compilations\\unresolved_issues.md",
+      "source_id": "COMP-UNRESOLVED-001",
+      "sha256": "cd0379cd4c1cb1bd162edea31c0deee797d3d66a6f39980a02a1ab8c1cdf1a97"
+    }
+  ]
+}

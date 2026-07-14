@@ -1,0 +1,7 @@
+project_id = "festival-handover-chat"
+
+[functions.festival-auth]
+verify_jwt = false
+
+[functions.festival-chat]
+verify_jwt = false

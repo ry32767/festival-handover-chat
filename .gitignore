@@ -1,0 +1,23 @@
+node_modules/
+dist/
+coverage/
+playwright-report/
+test-results/
+
+# Private source material and unreviewed LLM staging output.
+SourceDocs/
+99_LLM用/
+文化祭引継ぎ/
+*.zip
+
+.env
+.env.*
+!.env.example
+supabase/.temp/
+supabase/functions/.env
+supabase/functions/.env.*
+
+*.log
+*.tsbuildinfo
+.DS_Store
+Thumbs.db
