@@ -1,6 +1,7 @@
 import { mkdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { readUtf8 } from "./file-utils.ts";
+import { scanSensitiveContent, type SensitiveFinding as Finding } from "./sensitive-patterns.ts";
 
 interface ImportTarget {
   source: string;
@@ -9,11 +10,6 @@ interface ImportTarget {
   title: string;
   part: "classroom_booths" | "layout_and_movement" | "current_festival_records";
   highRisk?: boolean;
-}
-
-interface Finding {
-  label: string;
-  line: number;
 }
 
 const targets: readonly ImportTarget[] = [
@@ -29,14 +25,7 @@ const targets: readonly ImportTarget[] = [
   { source: "details/07_配置移動_会計.md", destination: "07_layout_and_accounting.md", sourceId: "COMP-DETAIL-007", title: "配置移動・会計", part: "layout_and_movement" },
   { source: "details/08_文化祭の友_デザイン_装飾.md", destination: "08_design_and_decoration.md", sourceId: "COMP-DETAIL-008", title: "文化祭の友・デザイン・装飾", part: "current_festival_records" },
   { source: "details/09_事後アンケート_反省_議事録.md", destination: "09_feedback_and_minutes.md", sourceId: "COMP-DETAIL-009", title: "事後アンケート・反省・議事録", part: "current_festival_records" },
-  { source: "details/10_webサイト班_過去資料アーカイブ.md", destination: "10_web_archive.md", sourceId: "COMP-DETAIL-010", title: "Webサイト班・過去資料アーカイブ", part: "current_festival_records", highRisk: true },
-] as const;
-
-const detectors = [
-  { label: "email", pattern: /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/giu },
-  { label: "phone", pattern: /(?:0\d{1,4}[-ー\s]\d{1,4}[-ー\s]\d{3,4}|0\d{9,10})/gu },
-  { label: "LINE identifier", pattern: /LINE\s*(?:ID|アカウント)?\s*[:：]\s*@?[A-Z0-9._-]+/giu },
-  { label: "credential", pattern: /(?:パスワード|password|passcode|secret)\s*(?:[:：=]|は)\s*`?[^`、。\s]+`?/giu },
+  { source: "details/10_webサイト班_過去資料アーカイブ.md", destination: "10_web_archive.md", sourceId: "COMP-DETAIL-010", title: "Webサイト班・過去資料アーカイブ", part: "current_festival_records" },
 ] as const;
 
 async function main(): Promise<void> {
@@ -50,7 +39,7 @@ async function main(): Promise<void> {
   const quarantined: Array<{ target: ImportTarget; findings: Finding[] }> = [];
   for (const target of targets) {
     const content = await readUtf8(path.join(stagingRoot, target.source));
-    const findings = detectSensitiveContent(content);
+    const findings = scanSensitiveContent(content);
     if (target.highRisk) findings.push({ label: "manual review required", line: 1 });
     const uniqueFindings = deduplicateFindings(findings);
     const destination = path.join(destinationRoot, target.destination);
@@ -66,17 +55,6 @@ async function main(): Promise<void> {
   await writeFile(reportPath, createReport(promoted, quarantined), "utf8");
   console.log(`LLM knowledge import completed: ${promoted.length} promoted, ${quarantined.length} quarantined`);
   for (const item of quarantined) console.log(`QUARANTINED ${item.target.source}: ${item.findings.map((finding) => `${finding.label}@${finding.line}`).join(", ")}`);
-}
-
-function detectSensitiveContent(content: string): Finding[] {
-  const findings: Finding[] = [];
-  content.split(/\r?\n/u).forEach((line, index) => {
-    for (const detector of detectors) {
-      detector.pattern.lastIndex = 0;
-      if (detector.pattern.test(line)) findings.push({ label: detector.label, line: index + 1 });
-    }
-  });
-  return findings;
 }
 
 function deduplicateFindings(findings: Finding[]): Finding[] {

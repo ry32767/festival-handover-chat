@@ -1,8 +1,13 @@
 {
-  "synced_at": "2026-07-13T16:00:02.824Z",
-  "store_name": "fileSearchStores/festivalhandover20260713t15-59xahndfwgh6",
-  "file_count": 9,
+  "synced_at": "2026-07-14T15:54:12.417Z",
+  "store_name": "fileSearchStores/festivalhandover20260714t15-jqejaa3azcl4",
+  "file_count": 13,
   "files": [
+    {
+      "path": "knowledge\\40_compilations\\01_overall_operations.md",
+      "source_id": "COMP-DETAIL-001",
+      "sha256": "cf9d4532909b1361d6d5344063f7ca591cffdce24a0512d994ea201d364b9ec2"
+    },
     {
       "path": "knowledge\\40_compilations\\02_schedule.md",
       "source_id": "COMP-DETAIL-002",
@@ -11,12 +16,17 @@
     {
       "path": "knowledge\\40_compilations\\03_classroom_booths.md",
       "source_id": "COMP-DETAIL-003",
-      "sha256": "3f32bb9905b87ea85a741e18d7a8495d9fed9e7c8f39906ea630ae27f0d94f53"
+      "sha256": "d5b614af059662b86698702bfe3eacce60ebdcae7293c682cefa1b6f2e6b2317"
     },
     {
       "path": "knowledge\\40_compilations\\04_food_and_first_year.md",
       "source_id": "COMP-DETAIL-004",
       "sha256": "d3adb8177aa0bb2b05c7be673f5f56b19027256faba445a28b69c4853ae29960"
+    },
+    {
+      "path": "knowledge\\40_compilations\\05_general_affairs.md",
+      "source_id": "COMP-DETAIL-005",
+      "sha256": "657f1cb4f1cd3b7abf2cd169403cc1e68940eb7d897c7f1ecc3f330c908dbd2f"
     },
     {
       "path": "knowledge\\40_compilations\\06_exhibition_and_stages.md",
@@ -29,9 +39,19 @@
       "sha256": "0dedc2bcd947e0615498be64a0b6d7fdc406376cbf18b71f634fd871989d2a86"
     },
     {
+      "path": "knowledge\\40_compilations\\08_design_and_decoration.md",
+      "source_id": "COMP-DETAIL-008",
+      "sha256": "47748800e0adc411ca89fe9e31eea1f893e8ccb277c98882ee4f2e20b47a693d"
+    },
+    {
       "path": "knowledge\\40_compilations\\09_feedback_and_minutes.md",
       "source_id": "COMP-DETAIL-009",
       "sha256": "0af2b2b123f6597b02cc42c4beaff8c4f7219450d82770a857ba2915faa5d73e"
+    },
+    {
+      "path": "knowledge\\40_compilations\\10_web_archive.md",
+      "source_id": "COMP-DETAIL-010",
+      "sha256": "3888e28bfb501dbfab1ea99b992bc8db9c461497cb30dec53954922fefbd5511"
     },
     {
       "path": "knowledge\\40_compilations\\glossary.md",
