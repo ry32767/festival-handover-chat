@@ -1,4 +1,4 @@
-import { queryGeminiFileSearch } from "./gemini.ts";
+import { ALLOWED_GEMINI_MODELS, queryGeminiFileSearch } from "./gemini.ts";
 
 Deno.test("Gemini File Search response maps citations without exposing raw metadata", async () => {
   const response = await queryGeminiFileSearch({
@@ -72,15 +72,21 @@ Deno.test("Gemini prompt includes selected character instructions", async () => 
       const body = JSON.parse(String(init?.body)) as { input?: unknown };
       prompt = typeof body.input === "string" ? body.input : "";
       return Promise.resolve(Response.json({
-        steps: [{ type: "model_output", content: [{ type: "text", text: "すだゆうです。論点を整理します。" }] }],
+        steps: [{ type: "model_output", content: [{ type: "text", text: "すだゆうだよ。論点を整理するね。" }] }],
       })) as Promise<Response>;
     },
   });
 
   assertIncludes(prompt, "回答キャラクター: すだゆう");
-  assertIncludes(prompt, "冒頭は必ず「すだゆうです。」");
-  assertIncludes(prompt, "議論で答えている感じ");
+  assertIncludes(prompt, "冒頭は必ず「すだゆうだよ。」");
+  assertIncludes(prompt, "議論で話している感じの話し言葉");
   assertIncludes(prompt, "共通ポリシー、出典規則、安全判断");
+});
+
+Deno.test("Gemini models are limited to the approved choices", () => {
+  assertEquals(ALLOWED_GEMINI_MODELS.includes("gemini-2.5-flash"), true);
+  assertEquals(ALLOWED_GEMINI_MODELS.includes("gemini-3.1-flash-lite"), true);
+  assertEquals((ALLOWED_GEMINI_MODELS as readonly string[]).includes("gemini-1.5-flash"), false);
 });
 
 function assertEquals(actual: unknown, expected: unknown): void {

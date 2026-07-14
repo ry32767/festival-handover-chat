@@ -3,7 +3,7 @@ import { verifySessionToken } from "../_shared/auth.ts";
 import { getConfiguredOrigins, resolveCors } from "../_shared/cors.ts";
 import { acceptsJson, errorResponse } from "../_shared/http.ts";
 import { jsonResponse } from "../_shared/http.ts";
-import { queryGeminiFileSearch, type GeminiConfig } from "../_shared/gemini.ts";
+import { ALLOWED_GEMINI_MODELS, queryGeminiFileSearch, type GeminiConfig } from "../_shared/gemini.ts";
 
 interface ChatDependencies {
   allowedOrigins: readonly string[];
@@ -58,7 +58,8 @@ function readGeminiConfig(): GeminiConfig | undefined {
   const apiKey = Deno.env.get("GEMINI_API_KEY");
   const model = Deno.env.get("GEMINI_MODEL");
   const fileSearchStore = Deno.env.get("GEMINI_FILE_SEARCH_STORE");
-  return apiKey && model && fileSearchStore ? { apiKey, model, fileSearchStore } : undefined;
+  const allowedModel = model && ALLOWED_GEMINI_MODELS.includes(model as (typeof ALLOWED_GEMINI_MODELS)[number]);
+  return apiKey && allowedModel && fileSearchStore ? { apiKey, model, fileSearchStore } : undefined;
 }
 
 if (import.meta.main) Deno.serve((request) => handleFestivalChat(request));

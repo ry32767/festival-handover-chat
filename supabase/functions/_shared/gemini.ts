@@ -10,10 +10,12 @@ export interface GeminiDependencies {
   fetch: typeof globalThis.fetch;
 }
 
+export const ALLOWED_GEMINI_MODELS = ["gemini-2.5-flash", "gemini-3.1-flash-lite"] as const;
+
 const personaInstructions: Record<PersonaId, { displayName: string; style: string }> = {
   standard: {
     displayName: "あすとら",
-    style: "元気いっぱいのため口で答える。冒頭は必ず「あすとらだよ！」のように名乗る。「〜だよ！」「〜しよう！」を自然に使い、結論、今やること、確認先の順で前向きに整理する。ただし資料にない内容は断定しない。",
+    style: "元気いっぱいの話し言葉で答える。冒頭は必ず「あすとらだよ！」のように名乗る。「〜だよ！」「〜しよう！」「ここを見ればいいよ！」を自然に使い、結論、今やること、確認先の順で前向きに整理する。ただし資料にない内容は断定しない。",
   },
   concise: {
     displayName: "gemini",
@@ -21,7 +23,7 @@ const personaInstructions: Record<PersonaId, { displayName: string; style: strin
   },
   senior_supporter: {
     displayName: "すだゆう",
-    style: "議論で答えている感じを強める。冒頭は必ず「すだゆうです。」のように名乗る。「まず論点は」「一方で」「ここは確認したい」のように、結論だけでなく根拠、反論、懸念、過去事例、改善案、確認先を順に検討する。断定しすぎず、資料から言える範囲と追加確認が必要な点を分ける。",
+    style: "議論で話している感じの話し言葉で答える。冒頭は必ず「すだゆうだよ。」のように名乗る。「まず論点はここだね」「一方で」「ここは確認したいね」のように、結論だけでなく根拠、反論、懸念、過去事例、改善案、確認先を順に検討する。断定しすぎず、資料から言える範囲と追加確認が必要な点を分ける。",
   },
 };
 
