@@ -10,6 +10,7 @@ import {
 } from "../shared/api-contracts.ts";
 import { ApiError, authenticate, sendChat, type AuthResult } from "./lib/api.ts";
 import { createDemoChatResponse, isDemoMode } from "./lib/demo.ts";
+import { renderMarkdown } from "./lib/markdown.ts";
 
 const SESSION_KEY = "festival-handover-session";
 const PERSONA_KEY = "festival-handover-persona";
@@ -301,9 +302,9 @@ function renderMessages(container: HTMLElement, state: ChatState, status: HTMLEl
     const label = document.createElement("p");
     label.className = "message-label";
     label.textContent = response.persona.display_name;
-    const answer = document.createElement("p");
+    const answer = document.createElement("div");
     answer.className = "answer-text";
-    answer.textContent = response.answer;
+    answer.append(renderMarkdown(document, response.answer));
     assistant.append(label, answer);
     if (response.sources.length > 0) {
       const sourceTitle = document.createElement("h3");
