@@ -107,8 +107,10 @@ Deno.test("Gemini prompt includes selected character instructions", async () => 
   assertIncludes(prompt, "相手への依頼や指示、重大な注意");
   assertIncludes(prompt, "より明確な丁寧語へ切り替える");
   assertIncludes(prompt, "ため口");
-  assertIncludes(prompt, "Markdownの見出し、太字見出し、箇条書き、番号リストは使わず");
-  assertIncludes(prompt, "会議でそのまま発言するような短い段落");
+  assertIncludes(prompt, "Markdownの見出し、太字見出し、箇条書き、番号リストは多用しない");
+  assertIncludes(prompt, "段落だけでは読みにくい場合だけ短い箇条書き");
+  assertIncludes(prompt, "各項目を必ず改行");
+  assertIncludes(prompt, "1文の中へ中黒を詰め込まない");
   assertIncludes(prompt, "口癖は必要な場面に1つまで");
   assertIncludes(prompt, "〜か、、");
   assertIncludes(prompt, "〜でして、、");
@@ -119,7 +121,7 @@ Deno.test("Gemini prompt includes selected character instructions", async () => 
   assertIncludes(prompt, "共通ポリシー、出典規則、安全判断");
 });
 
-Deno.test("Gemini prompt keeps structured lists exclusive to gemini persona", async () => {
+Deno.test("Gemini prompt keeps structured lists restrained for character personas", async () => {
   const prompts = new Map<string, string>();
   for (const personaId of ["standard", "concise", "senior_supporter"] as const) {
     await queryGeminiFileSearch({
@@ -142,10 +144,13 @@ Deno.test("Gemini prompt keeps structured lists exclusive to gemini persona", as
     });
   }
 
-  assertIncludes(prompts.get("standard") ?? "", "箇条書き、番号リストは使わず");
+  assertIncludes(prompts.get("standard") ?? "", "箇条書き、番号リストは多用しない");
   assertIncludes(prompts.get("standard") ?? "", "短い会話文の段落");
+  assertIncludes(prompts.get("standard") ?? "", "確認事項や手順が3件以上ある場合だけ");
+  assertIncludes(prompts.get("standard") ?? "", "1文の中へ中黒を詰め込まない");
   assertIncludes(prompts.get("concise") ?? "", "Markdownの短い見出し、太字、最大5項目程度の箇条書き");
-  assertIncludes(prompts.get("senior_supporter") ?? "", "箇条書き、番号リストは使わず");
+  assertIncludes(prompts.get("senior_supporter") ?? "", "箇条書き、番号リストは多用しない");
+  assertIncludes(prompts.get("senior_supporter") ?? "", "段落だけでは読みにくい場合だけ短い箇条書き");
   assertIncludes(prompts.get("senior_supporter") ?? "", "説明文や報告書のように並べない");
 });
 
