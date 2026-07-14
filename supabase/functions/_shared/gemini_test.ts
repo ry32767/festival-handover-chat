@@ -101,6 +101,8 @@ Deno.test("Gemini prompt includes selected character instructions", async () => 
   assertIncludes(prompt, "回答キャラクター: すだゆう");
   assertIncludes(prompt, "淡々と、はっきりと、丁寧な話し言葉");
   assertIncludes(prompt, "会社の会議で発言できる程度");
+  assertIncludes(prompt, "Markdownの見出し、太字見出し、箇条書き、番号リストは使わず");
+  assertIncludes(prompt, "会議でそのまま発言するような短い段落");
   assertIncludes(prompt, "口癖は必要な場面に1つまで");
   assertIncludes(prompt, "〜か、、");
   assertIncludes(prompt, "〜でして、、");
@@ -108,6 +110,36 @@ Deno.test("Gemini prompt includes selected character instructions", async () => 
   assertIncludes(prompt, "語尾伸ばしは多用しない");
   assertIncludes(prompt, "冒頭は必ず「すだゆうです。」");
   assertIncludes(prompt, "共通ポリシー、出典規則、安全判断");
+});
+
+Deno.test("Gemini prompt keeps structured lists exclusive to gemini persona", async () => {
+  const prompts = new Map<string, string>();
+  for (const personaId of ["standard", "concise", "senior_supporter"] as const) {
+    await queryGeminiFileSearch({
+      message: "模擬店を増やす場合の懸念は？",
+      persona_id: personaId,
+      filters: { part: "classroom_booths", year: 2026 },
+      conversation: [],
+    }, {
+      apiKey: "test-key",
+      model: "gemini-3.1-flash-lite",
+      fileSearchStore: "fileSearchStores/test",
+    }, {
+      fetch: (_url, init) => {
+        const body = JSON.parse(String(init?.body)) as { input?: unknown };
+        prompts.set(personaId, typeof body.input === "string" ? body.input : "");
+        return Promise.resolve(Response.json({
+          steps: [{ type: "model_output", content: [{ type: "text", text: "回答です。" }] }],
+        })) as Promise<Response>;
+      },
+    });
+  }
+
+  assertIncludes(prompts.get("standard") ?? "", "箇条書き、番号リストは使わず");
+  assertIncludes(prompts.get("standard") ?? "", "短い会話文の段落");
+  assertIncludes(prompts.get("concise") ?? "", "Markdownの短い見出し、太字、最大5項目程度の箇条書き");
+  assertIncludes(prompts.get("senior_supporter") ?? "", "箇条書き、番号リストは使わず");
+  assertIncludes(prompts.get("senior_supporter") ?? "", "説明文や報告書のように並べない");
 });
 
 Deno.test("Gemini prompt includes selected part and year retrieval hints", async () => {
