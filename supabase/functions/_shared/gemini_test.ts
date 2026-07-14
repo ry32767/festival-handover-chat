@@ -101,12 +101,12 @@ Deno.test("Gemini prompt includes selected character instructions", async () => 
   assertIncludes(prompt, "回答キャラクター: すだゆう");
   assertIncludes(prompt, "淡々と、はっきりした話し言葉");
   assertIncludes(prompt, "会社の会議で発言できる程度");
-  assertIncludes(prompt, "文末をすべてです・ます調で揃えない");
+  assertIncludes(prompt, "基本は丁寧語");
   assertIncludes(prompt, "通常の意見、感想、状況整理、軽い問いかけ");
-  assertIncludes(prompt, "落ち着いたため口");
+  assertIncludes(prompt, "落ち着いた丁寧語");
   assertIncludes(prompt, "相手への依頼や指示、重大な注意");
-  assertIncludes(prompt, "丁寧語へ切り替える");
-  assertIncludes(prompt, "ため口と丁寧語を自然に混ぜてよい");
+  assertIncludes(prompt, "より明確な丁寧語へ切り替える");
+  assertIncludes(prompt, "ため口");
   assertIncludes(prompt, "Markdownの見出し、太字見出し、箇条書き、番号リストは使わず");
   assertIncludes(prompt, "会議でそのまま発言するような短い段落");
   assertIncludes(prompt, "口癖は必要な場面に1つまで");
