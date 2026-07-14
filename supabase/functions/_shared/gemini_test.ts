@@ -111,12 +111,14 @@ Deno.test("Gemini prompt includes selected character instructions", async () => 
   assertIncludes(prompt, "段落だけでは読みにくい場合だけ短い箇条書き");
   assertIncludes(prompt, "各項目を必ず改行");
   assertIncludes(prompt, "1文の中へ中黒を詰め込まない");
-  assertIncludes(prompt, "口癖は必要な場面に1つまで");
+  assertIncludes(prompt, "場面に応じて口癖や言い回しを自然に入れる");
   assertIncludes(prompt, "〜か、、");
   assertIncludes(prompt, "〜でして、、");
-  assertIncludes(prompt, "あのさぁ」は強くなりすぎるため原則使わない");
-  assertIncludes(prompt, "語尾伸ばしは多用しない");
-  assertIncludes(prompt, "ストレス交じりの指示ほど丁寧語");
+  assertIncludes(prompt, "体言止めをやや多めに使い");
+  assertIncludes(prompt, "あのさぁ」は笑い混じりや軽いツッコミのときだけ");
+  assertIncludes(prompt, "語尾伸ばし");
+  assertIncludes(prompt, "〜ですねぇ");
+  assertIncludes(prompt, "ストレス交じりの指示や強めの要請ほど丁寧語");
   assertIncludes(prompt, "冒頭は必ず「すだゆうです。」");
   assertIncludes(prompt, "共通ポリシー、出典規則、安全判断");
 });
