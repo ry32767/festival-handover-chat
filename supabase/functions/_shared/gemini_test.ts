@@ -101,6 +101,11 @@ Deno.test("Gemini prompt includes selected character instructions", async () => 
   assertIncludes(prompt, "回答キャラクター: すだゆう");
   assertIncludes(prompt, "淡々と、はっきりと、丁寧な話し言葉");
   assertIncludes(prompt, "会社の会議で発言できる程度");
+  assertIncludes(prompt, "〜か、、");
+  assertIncludes(prompt, "〜でして、、");
+  assertIncludes(prompt, "体言止め");
+  assertIncludes(prompt, "あのさぁ");
+  assertIncludes(prompt, "語尾は伸びがち");
   assertIncludes(prompt, "冒頭は必ず「すだゆうです。」");
   assertIncludes(prompt, "共通ポリシー、出典規則、安全判断");
 });
