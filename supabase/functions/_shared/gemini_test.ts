@@ -111,6 +111,9 @@ Deno.test("Gemini prompt includes selected character instructions", async () => 
   assertIncludes(prompt, "段落だけでは読みにくい場合だけ短い箇条書き");
   assertIncludes(prompt, "各項目を必ず改行");
   assertIncludes(prompt, "1文の中へ中黒を詰め込まない");
+  assertIncludes(prompt, "資料の根拠、数字、ルール、確認先は省略しない");
+  assertIncludes(prompt, "根拠説明だけの硬いパートとキャラ口調だけのパートを分けない");
+  assertIncludes(prompt, "資料上の事実→懸念→確認先→すだゆうらしい反応を一続きの話し言葉として統合する");
   assertIncludes(prompt, "場面に応じて口癖や言い回しを自然に入れる");
   assertIncludes(prompt, "〜か、、");
   assertIncludes(prompt, "〜でして、、");
