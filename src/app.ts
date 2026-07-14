@@ -241,6 +241,7 @@ function renderChat(root: HTMLElement, session: AuthResult, demoMode = false): v
     submit.disabled = true;
     submit.textContent = "検索中…";
     setStatus(status, "資料を検索しています。", "loading");
+    showTyping(messages, personaLabel(persona), question);
     const request = {
       message: question,
       persona_id: persona.value,
@@ -270,6 +271,7 @@ function renderChat(root: HTMLElement, session: AuthResult, demoMode = false): v
         setStatus(status, error instanceof Error ? error.message : "回答を取得できませんでした。入力内容を残しています。", "error");
       })
       .finally(() => {
+        removeTyping(messages);
         submit.textContent = "資料を検索して質問";
         submit.disabled = input.value.trim().length === 0;
         count.textContent = `${input.value.length.toLocaleString("ja-JP")} / 2,000`;
@@ -330,6 +332,54 @@ function renderMessages(container: HTMLElement, state: ChatState, status: HTMLEl
     assistant.append(copy);
     container.append(user, assistant);
   });
+  scrollToEnd(container);
+}
+
+function personaLabel(persona: HTMLSelectElement): string {
+  const raw = persona.selectedOptions[0]?.textContent ?? "";
+  const name = raw.split("—")[0]?.trim();
+  return name && name.length > 0 ? name : "回答";
+}
+
+function showTyping(container: HTMLElement, label: string, question: string): void {
+  removeTyping(container);
+  container.querySelector(".empty-state")?.remove();
+
+  const user = document.createElement("article");
+  user.className = "message message-user typing-echo";
+  const userLabel = document.createElement("p");
+  userLabel.className = "message-label";
+  userLabel.textContent = "質問";
+  const userText = document.createElement("p");
+  userText.textContent = question;
+  user.append(userLabel, userText);
+
+  const bubble = document.createElement("article");
+  bubble.className = "message message-assistant typing-indicator";
+  bubble.setAttribute("aria-label", `${label}が回答を作成中`);
+  const cap = document.createElement("p");
+  cap.className = "message-label";
+  cap.textContent = label;
+  const dots = document.createElement("div");
+  dots.className = "typing-dots";
+  dots.setAttribute("aria-hidden", "true");
+  dots.append(document.createElement("span"), document.createElement("span"), document.createElement("span"));
+  bubble.append(cap, dots);
+
+  const group = document.createElement("div");
+  group.className = "typing-group";
+  group.append(user, bubble);
+  container.append(group);
+  scrollToEnd(container);
+}
+
+function removeTyping(container: HTMLElement): void {
+  container.querySelector(".typing-group")?.remove();
+}
+
+function scrollToEnd(container: HTMLElement): void {
+  const last = container.lastElementChild;
+  if (last instanceof HTMLElement) last.scrollIntoView({ block: "nearest", behavior: "smooth" });
 }
 
 function updateComposer(input: HTMLTextAreaElement, submit: HTMLButtonElement, count: HTMLElement, status: HTMLElement): void {
