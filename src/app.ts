@@ -134,7 +134,7 @@ function renderChat(root: HTMLElement, session: AuthResult, demoMode = false): v
           <select id="persona" name="persona">
             <option value="standard">あすとら — 元気に案内</option>
             <option value="concise">gemini — 通常</option>
-            <option value="senior_supporter">すだゆう — 議論しながら確認</option>
+            <option value="senior_supporter">すだゆう — 丁寧に論点整理</option>
           </select>
           <label for="part">パート</label>
           <select id="part" name="part">

@@ -72,14 +72,15 @@ Deno.test("Gemini prompt includes selected character instructions", async () => 
       const body = JSON.parse(String(init?.body)) as { input?: unknown };
       prompt = typeof body.input === "string" ? body.input : "";
       return Promise.resolve(Response.json({
-        steps: [{ type: "model_output", content: [{ type: "text", text: "すだゆうだよ。論点を整理するね。" }] }],
+        steps: [{ type: "model_output", content: [{ type: "text", text: "すだゆうです。論点を整理します。" }] }],
       })) as Promise<Response>;
     },
   });
 
   assertIncludes(prompt, "回答キャラクター: すだゆう");
-  assertIncludes(prompt, "冒頭は必ず「すだゆうだよ。」");
-  assertIncludes(prompt, "議論で話している感じの話し言葉");
+  assertIncludes(prompt, "淡々と、はっきりと、丁寧な話し言葉");
+  assertIncludes(prompt, "会社の会議で発言できる程度");
+  assertIncludes(prompt, "冒頭は必ず「すだゆうです。」");
   assertIncludes(prompt, "共通ポリシー、出典規則、安全判断");
 });
 
