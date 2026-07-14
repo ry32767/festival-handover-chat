@@ -56,6 +56,37 @@ Deno.test("Gemini File Search response marks answers without citations as insuff
   assertEquals(typeof response.warning, "string");
 });
 
+Deno.test("Gemini prompt includes selected character instructions", async () => {
+  let prompt = "";
+  await queryGeminiFileSearch({
+    message: "議論調で確認して",
+    persona_id: "senior_supporter",
+    filters: { part: "all", year: "all" },
+    conversation: [],
+  }, {
+    apiKey: "test-key",
+    model: "gemini-3.1-flash-lite",
+    fileSearchStore: "fileSearchStores/test",
+  }, {
+    fetch: (_url, init) => {
+      const body = JSON.parse(String(init?.body)) as { input?: unknown };
+      prompt = typeof body.input === "string" ? body.input : "";
+      return Promise.resolve(Response.json({
+        steps: [{ type: "model_output", content: [{ type: "text", text: "すだゆうです。論点を整理します。" }] }],
+      })) as Promise<Response>;
+    },
+  });
+
+  assertIncludes(prompt, "回答キャラクター: すだゆう");
+  assertIncludes(prompt, "冒頭は必ず「すだゆうです。」");
+  assertIncludes(prompt, "議論で答えている感じ");
+  assertIncludes(prompt, "共通ポリシー、出典規則、安全判断");
+});
+
 function assertEquals(actual: unknown, expected: unknown): void {
   if (!Object.is(actual, expected)) throw new Error(`Expected ${String(expected)}, received ${String(actual)}`);
+}
+
+function assertIncludes(actual: string, expected: string): void {
+  if (!actual.includes(expected)) throw new Error(`Expected prompt to include: ${expected}`);
 }

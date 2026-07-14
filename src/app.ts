@@ -130,11 +130,11 @@ function renderChat(root: HTMLElement, session: AuthResult, demoMode = false): v
             <p class="section-kicker">回答条件</p>
             <p>質問に合わせて絞り込めます。</p>
           </div>
-          <label for="persona">回答スタイル</label>
+          <label for="persona">回答キャラクター</label>
           <select id="persona" name="persona">
-            <option value="standard">あすとら — 標準</option>
-            <option value="concise">gemini — 簡潔</option>
-            <option value="senior_supporter">すだゆう — 懸念も確認</option>
+            <option value="standard">あすとら — 元気に案内</option>
+            <option value="concise">gemini — 通常</option>
+            <option value="senior_supporter">すだゆう — 議論しながら確認</option>
           </select>
           <label for="part">パート</label>
           <select id="part" name="part">
