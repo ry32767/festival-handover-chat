@@ -123,7 +123,62 @@ Deno.test("Gemini prompt includes selected character instructions", async () => 
   assertIncludes(prompt, "〜ですねぇ");
   assertIncludes(prompt, "ストレス交じりの指示や強めの要請ほど丁寧語");
   assertIncludes(prompt, "冒頭は必ず「すだゆうです。」");
+  assertIncludes(prompt, "会話に割って入って一言指摘するときは「あの、」");
+  assertIncludes(prompt, "論理的で、批判的思考にもとづき論点を検討する姿勢");
   assertIncludes(prompt, "共通ポリシー、出典規則、安全判断");
+});
+
+Deno.test("Gemini prompt includes senior_supporter tone examples as few-shot guidance", async () => {
+  let prompt = "";
+  await queryGeminiFileSearch({
+    message: "受付を減らしたい",
+    persona_id: "senior_supporter",
+    filters: { part: "all", year: "all" },
+    conversation: [],
+  }, {
+    apiKey: "test-key",
+    model: "gemini-3.1-flash-lite",
+    fileSearchStore: "fileSearchStores/test",
+  }, {
+    fetch: (_url, init) => {
+      const body = JSON.parse(String(init?.body)) as { input?: unknown };
+      prompt = typeof body.input === "string" ? body.input : "";
+      return Promise.resolve(Response.json({
+        steps: [{ type: "model_output", content: [{ type: "text", text: "すだゆうです。" }] }],
+      })) as Promise<Response>;
+    },
+  });
+
+  assertIncludes(prompt, "すだゆうの口調サンプル");
+  assertIncludes(prompt, "資料の代わりに事実として使わない");
+  assertIncludes(prompt, "受付の人数減らすか、、");
+  assertIncludes(prompt, "これが今日判明しまして、、");
+  assertIncludes(prompt, "あの、その前に一点だけ");
+  assertIncludes(prompt, "利用者:");
+});
+
+Deno.test("Gemini prompt omits example block for personas without examples", async () => {
+  let prompt = "";
+  await queryGeminiFileSearch({
+    message: "雨天時は？",
+    persona_id: "concise",
+    filters: { part: "all", year: "all" },
+    conversation: [],
+  }, {
+    apiKey: "test-key",
+    model: "gemini-3.1-flash-lite",
+    fileSearchStore: "fileSearchStores/test",
+  }, {
+    fetch: (_url, init) => {
+      const body = JSON.parse(String(init?.body)) as { input?: unknown };
+      prompt = typeof body.input === "string" ? body.input : "";
+      return Promise.resolve(Response.json({
+        steps: [{ type: "model_output", content: [{ type: "text", text: "geminiです。" }] }],
+      })) as Promise<Response>;
+    },
+  });
+
+  if (prompt.includes("口調サンプル")) throw new Error("concise prompt should not include tone examples");
 });
 
 Deno.test("Gemini prompt keeps structured lists restrained for character personas", async () => {
