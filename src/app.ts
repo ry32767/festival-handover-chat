@@ -250,7 +250,9 @@ function renderChat(root: HTMLElement, session: AuthResult, demoMode = false): v
     };
 
     const responsePromise = demoMode
-      ? Promise.resolve(createDemoChatResponse(request))
+      ? new Promise<ChatResponse>((resolve) => {
+          window.setTimeout(() => resolve(createDemoChatResponse(request)), 1_100);
+        })
       : sendChat(session.session_token, request);
 
     void responsePromise
