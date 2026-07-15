@@ -617,25 +617,31 @@ button:disabled {
 }
 
 /* Claude参照のコンポーザ：入力欄の下に操作行（回答条件＋送信）を積む縦構成 */
+/* 待機時は入力1行＋送信ボタンだけの最小表示（横並び） */
 .composer-box {
   display: flex;
-  flex-direction: column;
-  align-items: stretch;
+  flex-direction: row;
+  align-items: center;
   gap: var(--space-2);
-  padding: var(--space-3);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3);
   border: 2px solid var(--color-rule);
   border-radius: var(--radius-md);
   background: var(--color-surface);
   transition: border-color var(--motion-fast), box-shadow var(--motion-fast);
 }
 
+/* 選択（フォーカス）時のみ、Claude配置の縦組みへ展開する */
 .composer-box:focus-within {
+  flex-direction: column;
+  align-items: stretch;
+  padding: var(--space-3);
   border-color: var(--color-focus);
   box-shadow: var(--shadow-focus);
 }
 
 .composer-box textarea {
-  width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
   min-height: 24px;
   max-height: 200px;
   padding: 0 var(--space-1);
@@ -644,11 +650,12 @@ button:disabled {
   background: transparent;
   resize: none;
   line-height: 1.6;
-  transition: min-height var(--motion-fast);
 }
 
-/* チャットボックス選択（フォーカス）時だけ入力エリアを大きくする */
+/* チャットボックス選択時だけ入力エリアを大きくする */
 .composer-box:focus-within textarea {
+  flex: none;
+  width: 100%;
   min-height: 84px;
 }
 
@@ -657,12 +664,16 @@ button:disabled {
   box-shadow: none;
 }
 
-/* 操作行：左に回答条件、右に送信ボタン */
+/* 操作行：待機時は送信ボタンのみ、選択時は左に回答条件・右に送信 */
 .composer-tools {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--space-2);
+  flex: 0 0 auto;
+}
+
+.composer-box:focus-within .composer-tools {
+  align-self: stretch;
 }
 
 /* 回答条件はチャットボックスに内蔵し、選択時のみ表示する */
@@ -753,12 +764,27 @@ button:disabled {
   white-space: nowrap;
 }
 
+/* 文字数カウンタも待機時は隠し、入力（選択）時のみ表示する */
+#question-count {
+  display: none;
+}
+
+.composer:focus-within #question-count {
+  display: inline;
+}
+
+/* 注意書きは待機時は隠し、入力する（選択する）ときにだけ表示する */
 .composer .privacy-note {
+  display: none;
   margin: var(--space-2) 0 0;
   padding: 0;
   border: 0;
   font-size: 0.7rem;
   text-align: center;
+}
+
+.composer:focus-within .privacy-note {
+  display: block;
 }
 
 @media (min-width: 760px) {
