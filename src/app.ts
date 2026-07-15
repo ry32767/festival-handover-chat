@@ -136,37 +136,6 @@ function renderChat(root: HTMLElement, session: AuthResult, demoMode = false): v
         </div>
       </header>
 
-      <div class="condition-bar">
-        <div class="bar-inner" role="group" aria-label="回答条件">
-          <div class="condition-field">
-            <label for="persona">キャラクター</label>
-            <select id="persona" name="persona">
-              <option value="standard">あすとら — 元気に案内</option>
-              <option value="concise">gemini — 通常</option>
-              <option value="senior_supporter">すだゆう — 丁寧に論点整理</option>
-            </select>
-          </div>
-          <div class="condition-field">
-            <label for="part">パート</label>
-            <select id="part" name="part">
-              <option value="all">すべて</option>
-              <option value="classroom_booths">教室模擬</option>
-              <option value="layout_and_movement">配置移動</option>
-              <option value="current_festival_records">今年度記録</option>
-            </select>
-          </div>
-          <div class="condition-field">
-            <label for="year">年度</label>
-            <select id="year" name="year">
-              <option value="all">すべて</option>
-              <option value="2026">2026</option>
-              <option value="2025">2025</option>
-              <option value="2024">2024</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
       <main class="chat-main">
         <div id="messages" class="message-stream" aria-live="polite" aria-label="会話"></div>
       </main>
@@ -176,9 +145,30 @@ function renderChat(root: HTMLElement, session: AuthResult, demoMode = false): v
           <div class="composer-box">
             <label class="sr-only" for="question">質問</label>
             <textarea id="question" name="question" rows="1" maxlength="2000" placeholder="質問を入力（例：4月に教室模擬が確認することは？）" aria-describedby="question-count chat-status"></textarea>
-            <button id="chat-submit" class="composer-send" type="submit" disabled aria-label="送信">
-              <span aria-hidden="true">↑</span>
-            </button>
+            <div class="composer-tools">
+              <div class="composer-conditions" role="group" aria-label="回答条件">
+                <select id="persona" name="persona" class="condition-select" aria-label="キャラクター">
+                  <option value="standard">あすとら</option>
+                  <option value="concise">gemini</option>
+                  <option value="senior_supporter">すだゆう</option>
+                </select>
+                <select id="part" name="part" class="condition-select" aria-label="パート">
+                  <option value="all">全パート</option>
+                  <option value="classroom_booths">教室模擬</option>
+                  <option value="layout_and_movement">配置移動</option>
+                  <option value="current_festival_records">今年度記録</option>
+                </select>
+                <select id="year" name="year" class="condition-select" aria-label="年度">
+                  <option value="all">全年度</option>
+                  <option value="2026">2026年度</option>
+                  <option value="2025">2025年度</option>
+                  <option value="2024">2024年度</option>
+                </select>
+              </div>
+              <button id="chat-submit" class="composer-send" type="submit" disabled aria-label="送信">
+                <span aria-hidden="true">↑</span>
+              </button>
+            </div>
           </div>
           <div class="composer-footer">
             <p id="chat-status" class="form-message" role="status" aria-live="polite"></p>

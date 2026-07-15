@@ -358,45 +358,6 @@ button:disabled {
   background: var(--color-ink);
 }
 
-/* 回答条件バー（ヘッダー直下・常設） */
-.condition-bar {
-  flex: 0 0 auto;
-  padding: var(--space-2) max(var(--space-4), env(safe-area-inset-right)) var(--space-2) max(var(--space-4), env(safe-area-inset-left));
-  border-bottom: var(--border);
-  background: var(--color-canvas);
-}
-
-.condition-bar .bar-inner {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2) var(--space-4);
-}
-
-.condition-field {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-width: 0;
-  flex: 1 1 auto;
-}
-
-.condition-field label {
-  margin: 0;
-  flex: 0 0 auto;
-  color: var(--color-muted);
-  font-size: 0.8rem;
-  font-weight: 700;
-}
-
-.condition-field select {
-  min-height: 40px;
-  min-width: 0;
-  flex: 1 1 auto;
-  padding: var(--space-1) var(--space-3);
-  border-width: 1px;
-}
-
 .session-status {
   display: inline-flex;
   align-items: center;
@@ -655,11 +616,13 @@ button:disabled {
   margin-top: 0;
 }
 
+/* Claude参照のコンポーザ：入力欄の下に操作行（回答条件＋送信）を積む縦構成 */
 .composer-box {
   display: flex;
-  align-items: flex-end;
+  flex-direction: column;
+  align-items: stretch;
   gap: var(--space-2);
-  padding: var(--space-2);
+  padding: var(--space-3);
   border: 2px solid var(--color-rule);
   border-radius: var(--radius-md);
   background: var(--color-surface);
@@ -672,20 +635,65 @@ button:disabled {
 }
 
 .composer-box textarea {
-  flex: 1 1 auto;
-  min-height: 40px;
+  width: 100%;
+  min-height: 24px;
   max-height: 200px;
-  padding: var(--space-2);
+  padding: 0 var(--space-1);
   border: 0;
   border-radius: 0;
   background: transparent;
   resize: none;
   line-height: 1.6;
+  transition: min-height var(--motion-fast);
+}
+
+/* チャットボックス選択（フォーカス）時だけ入力エリアを大きくする */
+.composer-box:focus-within textarea {
+  min-height: 84px;
 }
 
 .composer-box textarea:focus-visible {
   outline: none;
   box-shadow: none;
+}
+
+/* 操作行：左に回答条件、右に送信ボタン */
+.composer-tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+/* 回答条件はチャットボックスに内蔵し、選択時のみ表示する */
+.composer-conditions {
+  display: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.composer-box:focus-within .composer-conditions {
+  display: flex;
+}
+
+.condition-select {
+  width: auto;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 40px;
+  padding: var(--space-1) var(--space-6) var(--space-1) var(--space-3);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-sm);
+  color: var(--color-ink);
+  background: var(--color-canvas);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.condition-select:hover {
+  border-color: var(--color-muted);
 }
 
 .composer-send {
@@ -694,6 +702,8 @@ button:disabled {
   height: 44px;
   min-height: 44px;
   flex: 0 0 auto;
+  /* 条件が非表示の待機時でも送信ボタンは常に右端に置く */
+  margin-inline-start: auto;
   padding: 0;
   border-radius: var(--radius-md);
   font-size: 1.25rem;
@@ -846,20 +856,10 @@ button:disabled {
     display: none;
   }
 
-  /* 回答条件：ラベルを上に積んだ3等分の1行へ圧縮する */
-  .condition-bar .bar-inner {
-    gap: var(--space-2);
-  }
-
-  .condition-field {
-    flex: 1 1 0;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 2px;
-  }
-
-  .condition-field label {
-    font-size: 0.7rem;
+  /* コンポーザ内の回答条件：内容幅で並べ、収まらなければ折り返す（切り詰めない） */
+  .condition-select {
+    padding-inline: var(--space-2) var(--space-4);
+    font-size: 0.8rem;
   }
 
   /* メッセージ：上下余白を詰めて表示量を増やす */
