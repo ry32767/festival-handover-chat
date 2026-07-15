@@ -165,11 +165,42 @@ const fallbackSourcesByPart: Partial<Record<PartId, SourceReference>> = {
   },
 };
 
+// gemini-3.1-flash-liteは、File Searchで資料を取得していても file_citation 注釈を
+// 付け忘れることがある（実測で約1/3のコールで欠落）。注釈が欠けると出典0件になるため、
+// 根拠がありそうな回答（「見当たらない」系でない）で出典が空のときだけ、最大この回数まで再試行する。
+const MAX_INTERACTION_ATTEMPTS = 3;
+
 export async function queryGeminiFileSearch(
   request: ChatRequest,
   config: GeminiConfig,
   dependencies: GeminiDependencies = { fetch: globalThis.fetch },
 ): Promise<ChatResponse> {
+  const prompt = createPrompt(request);
+  let parsed = { answer: "", sources: [] as SourceReference[], requestId: null as string | null, retrieved: false };
+  for (let attempt = 1; attempt <= MAX_INTERACTION_ATTEMPTS; attempt += 1) {
+    parsed = await runInteraction(prompt, config, dependencies);
+    if (!parsed.answer) throw new Error("Gemini response did not contain answer text");
+    // 出典が取れれば確定。File Searchが走ったのに出典が空（＝注釈欠落 or 「見当たらない」の誤生成）の
+    // ときだけ再試行する。そもそも検索が実行されなかった場合は再試行しても無駄なので確定させる。
+    if (parsed.sources.length > 0 || !parsed.retrieved) break;
+  }
+  const sources = resolveSources(request.filters.part, parsed.answer, parsed.sources);
+  const persona = personaInstructions[request.persona_id];
+  return {
+    answer: parsed.answer,
+    persona: { id: request.persona_id, display_name: persona.displayName },
+    sources,
+    grounding: sources.length > 0 ? "grounded" : "insufficient",
+    warning: sources.length > 0 ? null : "十分な根拠を取得できませんでした。担当者または元資料へ確認してください。",
+    request_id: parsed.requestId ?? crypto.randomUUID(),
+  };
+}
+
+async function runInteraction(
+  prompt: string,
+  config: GeminiConfig,
+  dependencies: GeminiDependencies,
+): Promise<{ answer: string; sources: SourceReference[]; requestId: string | null; retrieved: boolean }> {
   const response = await dependencies.fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
     method: "POST",
     headers: {
@@ -178,7 +209,7 @@ export async function queryGeminiFileSearch(
     },
     body: JSON.stringify({
       model: config.model,
-      input: createPrompt(request),
+      input: prompt,
       tools: [{ type: "file_search", file_search_store_names: [config.fileSearchStore] }],
     }),
     signal: AbortSignal.timeout(60_000),
@@ -190,20 +221,8 @@ export async function queryGeminiFileSearch(
       : "";
     throw new Error(`Gemini request failed with status ${response.status}${detail}`);
   }
-
   const payload: unknown = await response.json();
-  const parsed = parseInteraction(payload);
-  if (!parsed.answer) throw new Error("Gemini response did not contain answer text");
-  const sources = resolveSources(request.filters.part, parsed.answer, parsed.sources);
-  const persona = personaInstructions[request.persona_id];
-  return {
-    answer: parsed.answer,
-    persona: { id: request.persona_id, display_name: persona.displayName },
-    sources,
-    grounding: sources.length > 0 ? "grounded" : "insufficient",
-    warning: sources.length > 0 ? null : "十分な根拠を取得できませんでした。担当者または元資料へ確認してください。",
-    request_id: parsed.requestId ?? crypto.randomUUID(),
-  };
+  return parseInteraction(payload);
 }
 
 function resolveSources(part: PartId, answer: string, sources: readonly SourceReference[]): SourceReference[] {
@@ -282,13 +301,19 @@ function createYearInstruction(year: YearId): string {
   return `対象年度: ${year}。front matterのyear_from/year_toの範囲に${year}を含む資料と、本文で${year}年・第79回・令和8年度に言及する資料を優先する。`;
 }
 
-function parseInteraction(value: unknown): { answer: string; sources: SourceReference[]; requestId: string | null } {
-  if (!isRecord(value)) return { answer: "", sources: [], requestId: null };
+function parseInteraction(
+  value: unknown,
+): { answer: string; sources: SourceReference[]; requestId: string | null; retrieved: boolean } {
+  if (!isRecord(value)) return { answer: "", sources: [], requestId: null, retrieved: false };
   const answerParts: string[] = [];
   const sources: SourceReference[] = [];
+  let retrieved = false;
   if (Array.isArray(value.steps)) {
     for (const step of value.steps) {
-      if (!isRecord(step) || step.type !== "model_output" || !Array.isArray(step.content)) continue;
+      if (!isRecord(step) || typeof step.type !== "string") continue;
+      // File Searchが実際に実行されたか（取得ステップの有無）。注釈欠落の再試行判定に使う。
+      if (step.type.startsWith("file_search")) retrieved = true;
+      if (step.type !== "model_output" || !Array.isArray(step.content)) continue;
       for (const block of step.content) {
         if (!isRecord(block) || block.type !== "text" || typeof block.text !== "string") continue;
         answerParts.push(block.text);
@@ -303,6 +328,7 @@ function parseInteraction(value: unknown): { answer: string; sources: SourceRefe
   return {
     answer: answerParts.join("\n").trim(),
     sources,
+    retrieved,
     requestId: typeof value.id === "string" ? value.id : null,
   };
 }

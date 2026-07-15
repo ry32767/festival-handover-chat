@@ -247,6 +247,112 @@ Deno.test("Gemini prompt includes selected part and year retrieval hints", async
   assertIncludes(prompt, "year_from/year_toの範囲に2026を含む資料");
 });
 
+Deno.test("Gemini retries when a grounded answer arrives without citations (flaky annotations)", async () => {
+  let calls = 0;
+  const response = await queryGeminiFileSearch({
+    message: "教室模擬の準備金は年度でどう変わった？",
+    persona_id: "concise",
+    filters: { part: "classroom_booths", year: "all" },
+    conversation: [],
+  }, {
+    apiKey: "test-key",
+    model: "gemini-3.1-flash-lite",
+    fileSearchStore: "fileSearchStores/test",
+  }, {
+    fetch: () => {
+      calls += 1;
+      // 1回目は File Search は走ったのに注釈欠落、2回目で file_citation が付く。
+      if (calls === 1) {
+        return Promise.resolve(Response.json({
+          steps: [
+            { type: "file_search_call" },
+            { type: "file_search_result", signature: "opaque" },
+            { type: "model_output", content: [{ type: "text", text: "geminiです。準備金は年度で変わっています。" }] },
+          ],
+        })) as Promise<Response>;
+      }
+      return Promise.resolve(Response.json({
+        steps: [
+          { type: "file_search_call" },
+          { type: "file_search_result", signature: "opaque" },
+          {
+            type: "model_output",
+            content: [{
+              type: "text",
+              text: "geminiです。準備金は5万円から段階的に変わっています。",
+              annotations: [{
+                type: "file_citation",
+                file_name: "classroom_booths_archive_2019_2025.md",
+                source: "## 5.8 準備金の推移\n5万円→45,000円→35,000円。",
+                custom_metadata: { source_id: "SRC-CLASSROOM-ARCHIVE-001", title: "教室模擬パート 歴代アーカイブ（2019-2025）" },
+              }],
+            }],
+          },
+        ],
+      })) as Promise<Response>;
+    },
+  });
+
+  assertEquals(calls, 2);
+  assertEquals(response.grounding, "grounded");
+  assertEquals(response.sources[0]?.source_id, "SRC-CLASSROOM-ARCHIVE-001");
+  assertEquals(response.sources[0]?.excerpt, "## 5.8 準備金の推移\n5万円→45,000円→35,000円。");
+});
+
+Deno.test("Gemini does not retry when File Search never ran (off-topic question)", async () => {
+  let calls = 0;
+  const response = await queryGeminiFileSearch({
+    message: "明日の天気は？",
+    persona_id: "concise",
+    filters: { part: "all", year: "all" },
+    conversation: [],
+  }, {
+    apiKey: "test-key",
+    model: "gemini-3.1-flash-lite",
+    fileSearchStore: "fileSearchStores/test",
+  }, {
+    fetch: () => {
+      calls += 1;
+      // file_search ステップなし＝検索が走っていない。再試行しても無駄なので1回で確定。
+      return Promise.resolve(Response.json({
+        steps: [{ type: "model_output", content: [{ type: "text", text: "確認できませんでした。" }] }],
+      })) as Promise<Response>;
+    },
+  });
+
+  assertEquals(calls, 1);
+  assertEquals(response.grounding, "insufficient");
+});
+
+Deno.test("Gemini retries up to the max when File Search ran but citations never appear", async () => {
+  let calls = 0;
+  const response = await queryGeminiFileSearch({
+    message: "教室模擬の準備金は？",
+    persona_id: "concise",
+    filters: { part: "classroom_booths", year: "all" },
+    conversation: [],
+  }, {
+    apiKey: "test-key",
+    model: "gemini-3.1-flash-lite",
+    fileSearchStore: "fileSearchStores/test",
+  }, {
+    fetch: () => {
+      calls += 1;
+      // File Searchは毎回走るが注釈が付かない（最悪ケース）。最大回数まで再試行し、最後はフォールバック出典。
+      return Promise.resolve(Response.json({
+        steps: [
+          { type: "file_search_call" },
+          { type: "file_search_result", signature: "opaque" },
+          { type: "model_output", content: [{ type: "text", text: "geminiです。準備金は年度で変わります。" }] },
+        ],
+      })) as Promise<Response>;
+    },
+  });
+
+  assertEquals(calls, 3);
+  assertEquals(response.sources[0]?.source_id, "COMP-DETAIL-003");
+});
+
 Deno.test("Gemini prompt injects a knowledge map so a weak model does not deny a whole part", async () => {
   let prompt = "";
   await queryGeminiFileSearch({
