@@ -111,6 +111,8 @@ knowledge/
 
 情報を失わないための根拠層。元資料1件につき原則1Markdownとする。既にMarkdownの資料も、front matterを付けた上でここへ登録するか、原文パスを保持して検索対象へ含める。
 
+`SourceDocs/`由来の引継ぎ書アーカイブを閲覧・検索対象へ昇格する場合もこの層に置き、`document_type: source_archive`・`derived: true`・`original_path: SourceDocs/...`を付ける。原本は無変更のまま、匿名化コピーだけをここへ置く。氏名・あだ名の除去（人間確認）と`knowledge:validate`・`knowledge:anonymization-check`合格を昇格条件とし、承認外ファイルは既定で非公開とする（詳細は [security.md](security.md) の「原本アーカイブの公開ゲート」）。
+
 ### 4.5 `80_personas`
 
 回答の表現層。人物名、文体、回答構成、質問方法を定義する。共通ポリシーを上書きできない。
@@ -172,7 +174,7 @@ source_format: pdf
 | `source_id` | string | 永続的な一意ID |
 | `title` | string | 出典表示用の資料名 |
 | `part` | enum | `classroom_booths`等 |
-| `document_type` | enum | handover, minutes, form, map, checklist等 |
+| `document_type` | enum | handover, minutes, form, map, checklist, compiled_handover, source_archive等 |
 | `year_from`, `year_to` | number/string | 適用年度。不明は`unknown` |
 | `status` | enum | draft, final, archived, reference |
 | `reliability` | enum | high, medium, low |

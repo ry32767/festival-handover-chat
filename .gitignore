@@ -21,3 +21,6 @@ supabase/functions/.env.*
 *.tsbuildinfo
 .DS_Store
 Thumbs.db
+
+# 引継ぎ書アーカイブ（source層）はPUBLICリポジトリへ公開しない。ローカル保持＋パスコード保護のFile Searchのみ（docs/security.md L105参照）
+knowledge/30_sources/

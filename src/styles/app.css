@@ -599,6 +599,48 @@ button:disabled {
   font-size: 0.875rem;
 }
 
+.source-list li + li {
+  margin-top: var(--space-2);
+}
+
+.source-label {
+  display: block;
+}
+
+.source-excerpt {
+  margin-top: var(--space-1);
+}
+
+.source-excerpt > summary {
+  cursor: pointer;
+  color: var(--color-signal);
+  font-weight: 700;
+}
+
+.source-excerpt-body {
+  margin-top: var(--space-2);
+  padding: var(--space-3);
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+}
+
+.source-excerpt-body > * {
+  margin: 0;
+}
+
+.source-excerpt-body > * + * {
+  margin-top: var(--space-2);
+}
+
+.source-excerpt-note {
+  margin-top: var(--space-2);
+  color: var(--color-muted);
+  font-size: 0.8rem;
+}
+
 .copy-button {
   min-height: 44px;
   margin-top: var(--space-3);

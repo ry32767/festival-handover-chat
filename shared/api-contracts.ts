@@ -22,6 +22,9 @@ export interface SourceReference {
   source_id: string;
   title: string;
   heading: string;
+  // File Searchが返した根拠チャンク本文（匿名化済みナレッジの抜粋）。
+  // 追加のAPI呼び出しなしで「元ソースを表示」するために回答へ同梱する。引用がない場合は省略。
+  excerpt?: string;
 }
 
 export interface ChatResponse {

@@ -341,9 +341,7 @@ function createAssistantMessage(response: ChatResponse, status: HTMLElement): HT
     const list = document.createElement("ul");
     list.className = "source-list";
     response.sources.forEach((source) => {
-      const item = document.createElement("li");
-      item.textContent = `${source.title} — 「${source.heading || "見出し不明"}」`;
-      list.append(item);
+      list.append(createSourceItem(source));
     });
     assistant.append(sourceTitle, list);
   }
@@ -358,6 +356,31 @@ function createAssistantMessage(response: ChatResponse, status: HTMLElement): HT
   });
   assistant.append(copy);
   return assistant;
+}
+
+function createSourceItem(source: ChatResponse["sources"][number]): HTMLElement {
+  const item = document.createElement("li");
+  const label = document.createElement("span");
+  label.className = "source-label";
+  label.textContent = `${source.title} — 「${source.heading || "見出し不明"}」`;
+  item.append(label);
+
+  // 追加のAPI呼び出しなしで、回答に同梱された根拠抜粋（匿名化済みナレッジ）をその場で開閉表示する。
+  if (source.excerpt && source.excerpt.trim().length > 0) {
+    const details = document.createElement("details");
+    details.className = "source-excerpt";
+    const summary = document.createElement("summary");
+    summary.textContent = "参照した資料を表示";
+    const body = document.createElement("div");
+    body.className = "source-excerpt-body";
+    body.append(renderMarkdown(document, source.excerpt));
+    const note = document.createElement("p");
+    note.className = "source-excerpt-note";
+    note.textContent = "匿名化済みの引継ぎナレッジからの抜粋です。原本（SourceDocs）は個人情報保護のため非公開です。";
+    details.append(summary, body, note);
+    item.append(details);
+  }
+  return item;
 }
 
 function personaLabel(persona: HTMLSelectElement): string {

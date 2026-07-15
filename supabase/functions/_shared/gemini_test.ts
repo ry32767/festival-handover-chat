@@ -33,6 +33,8 @@ Deno.test("Gemini File Search response maps citations without exposing raw metad
   assertEquals(response.persona.display_name, "gemini");
   assertEquals(response.sources[0]?.heading, "雨天対応");
   assertEquals(response.sources[0]?.source_id, "COMP-DETAIL-002");
+  // 元ソース閲覧: File Searchの根拠チャンク本文を追加コールなしで抜粋として同梱する。
+  assertEquals(response.sources[0]?.excerpt, "## 雨天対応\n手順を確認する。");
 });
 
 Deno.test("Gemini File Search response marks answers without citations as insufficient", async () => {
@@ -118,12 +120,16 @@ Deno.test("Gemini prompt includes selected character instructions", async () => 
   assertIncludes(prompt, "〜か、、");
   assertIncludes(prompt, "〜でして、、");
   assertIncludes(prompt, "体言止めをやや多めに使い");
-  assertIncludes(prompt, "あのさぁ」は笑い混じりや軽いツッコミのときだけ");
+  assertIncludes(prompt, "軽いツッコミや笑い混じりでは「あのさぁ（笑）」");
   assertIncludes(prompt, "語尾伸ばし");
   assertIncludes(prompt, "〜ですねぇ");
   assertIncludes(prompt, "ストレス交じりの指示や強めの要請ほど丁寧語");
   assertIncludes(prompt, "冒頭は必ず「すだゆうです。」");
-  assertIncludes(prompt, "会話に割って入って一言指摘するときは「あの、」");
+  assertIncludes(prompt, "会話に割って入って一言指摘するときや軽い前置きは「あの、」");
+  assertIncludes(prompt, "「あのですね」は乱発せず");
+  assertIncludes(prompt, "理不尽な要求や到底実現不可能なこと");
+  assertIncludes(prompt, "少し怒りを込めて反論するときだけに限定");
+  assertIncludes(prompt, "穏やかな反対には「あのですね」を使わず");
   assertIncludes(prompt, "論理的で、批判的思考にもとづき論点を検討する姿勢");
   assertIncludes(prompt, "共通ポリシー、出典規則、安全判断");
 });
@@ -239,6 +245,79 @@ Deno.test("Gemini prompt includes selected part and year retrieval hints", async
   assertIncludes(prompt, "配置移動・会計");
   assertIncludes(prompt, "07_layout_and_accounting.md");
   assertIncludes(prompt, "year_from/year_toの範囲に2026を含む資料");
+});
+
+Deno.test("Gemini prompt injects a knowledge map so a weak model does not deny a whole part", async () => {
+  let prompt = "";
+  await queryGeminiFileSearch({
+    message: "教室模擬の準備で確認することは？",
+    persona_id: "concise",
+    filters: { part: "classroom_booths", year: "all" },
+    conversation: [],
+  }, {
+    apiKey: "test-key",
+    model: "gemini-3.1-flash-lite",
+    fileSearchStore: "fileSearchStores/test",
+  }, {
+    fetch: (_url, init) => {
+      const body = JSON.parse(String(init?.body)) as { input?: unknown };
+      prompt = typeof body.input === "string" ? body.input : "";
+      return Promise.resolve(Response.json({
+        steps: [{ type: "model_output", content: [{ type: "text", text: "geminiです。" }] }],
+      })) as Promise<Response>;
+    },
+  });
+
+  assertIncludes(prompt, "「教室模擬パート（03_classroom_booths.md）」が必ず存在します");
+  assertIncludes(prompt, "「存在しない」と断定しないでください");
+  assertIncludes(prompt, "一括で「見当たらない」とは書かないでください");
+  assertIncludes(prompt, "検索補助キーワード");
+  assertIncludes(prompt, "模擬店");
+});
+
+Deno.test("Gemini prompt asks for year-labeled concrete examples without fabricating data", async () => {
+  let prompt = "";
+  await queryGeminiFileSearch({
+    message: "過去の準備金は？",
+    persona_id: "concise",
+    filters: { part: "classroom_booths", year: "all" },
+    conversation: [],
+  }, {
+    apiKey: "test-key",
+    model: "gemini-3.1-flash-lite",
+    fileSearchStore: "fileSearchStores/test",
+  }, {
+    fetch: (_url, init) => {
+      const body = JSON.parse(String(init?.body)) as { input?: unknown };
+      prompt = typeof body.input === "string" ? body.input : "";
+      return Promise.resolve(Response.json({
+        steps: [{ type: "model_output", content: [{ type: "text", text: "geminiです。" }] }],
+      })) as Promise<Response>;
+    },
+  });
+
+  assertIncludes(prompt, "年度名または世代名を添えた具体例を優先");
+  assertIncludes(prompt, "資料にない年度・数値・事例は創作しない");
+});
+
+Deno.test("Gemini falls back to overall-operations source for current_festival_records without citations", async () => {
+  const response = await queryGeminiFileSearch({
+    message: "今年度の全体の流れは？",
+    persona_id: "concise",
+    filters: { part: "current_festival_records", year: 2026 },
+    conversation: [],
+  }, {
+    apiKey: "test-key",
+    model: "gemini-3.1-flash-lite",
+    fileSearchStore: "fileSearchStores/test",
+  }, {
+    fetch: () => Promise.resolve(Response.json({
+      steps: [{ type: "model_output", content: [{ type: "text", text: "geminiです。今年度の全体運営を確認します。" }] }],
+    })) as Promise<Response>,
+  });
+
+  assertEquals(response.grounding, "grounded");
+  assertEquals(response.sources[0]?.source_id, "COMP-DETAIL-001");
 });
 
 Deno.test("Gemini models are limited to the approved choices", () => {

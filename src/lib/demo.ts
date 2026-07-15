@@ -21,6 +21,7 @@ export function createDemoChatResponse(request: ChatRequest): ChatResponse {
       source_id: "demo-source",
       title: "UI確認用サンプル資料（実資料ではありません）",
       heading: "回答表示サンプル",
+      excerpt: "## 回答表示サンプル\n\nこれはUI確認用の抜粋です。本番では、回答が根拠にした匿名化済みナレッジの該当箇所がここに表示されます。追加の通信は発生しません。",
     }],
     grounding: "insufficient",
     warning: "UI確認モードです。表示内容は実資料に基づく回答ではありません。",

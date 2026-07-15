@@ -1,8 +1,18 @@
 {
-  "synced_at": "2026-07-14T15:54:12.417Z",
-  "store_name": "fileSearchStores/festivalhandover20260714t15-jqejaa3azcl4",
-  "file_count": 13,
+  "synced_at": "2026-07-15T13:00:47.381Z",
+  "store_name": "fileSearchStores/festivalhandover20260715t12-g2jsj94keub9",
+  "file_count": 15,
   "files": [
+    {
+      "path": "knowledge\\30_sources\\classroom_booths_archive_2019_2025.md",
+      "source_id": "SRC-CLASSROOM-ARCHIVE-001",
+      "sha256": "7e7447b2e82b9dfccd5352ceaf8fe567ba04bd44f659eccddfef4194dff65fe7"
+    },
+    {
+      "path": "knowledge\\30_sources\\layout_movement_archive_2019_2026.md",
+      "source_id": "SRC-LAYOUT-ARCHIVE-001",
+      "sha256": "b6f29e3ceec5242df8604b39baa9f2422d8d247f61634f410979da019d2eae33"
+    },
     {
       "path": "knowledge\\40_compilations\\01_overall_operations.md",
       "source_id": "COMP-DETAIL-001",
