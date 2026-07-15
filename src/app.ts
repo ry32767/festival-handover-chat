@@ -15,6 +15,7 @@ import { renderMarkdown } from "./lib/markdown.ts";
 const SESSION_KEY = "festival-handover-session";
 const PERSONA_KEY = "festival-handover-persona";
 const CHAT_KEY = "festival-handover-chat";
+const SOURCES_KEY = "festival-handover-show-sources";
 const QUESTION_EXAMPLES = [
   "今の時期にやることは？",
   "教室模擬と配置移動で事前に確認することは？",
@@ -127,6 +128,7 @@ function renderChat(root: HTMLElement, session: AuthResult, demoMode = false): v
           </div>
           <div class="header-actions">
             <span class="session-status"><span aria-hidden="true"></span>${demoMode ? "UI確認モード" : "認証済み"}</span>
+            <button class="button-quiet" id="toggle-sources" type="button" aria-pressed="true">出典を表示</button>
             <button class="button-secondary" id="new-chat" type="button" aria-label="新しい会話">
               <span class="btn-icon" aria-hidden="true">＋</span>
               <span class="btn-label">新しい会話</span>
@@ -189,8 +191,21 @@ function renderChat(root: HTMLElement, session: AuthResult, demoMode = false): v
   const count = requireElement<HTMLSpanElement>(root, "#question-count");
   const status = requireElement<HTMLParagraphElement>(root, "#chat-status");
   const messages = requireElement<HTMLDivElement>(root, "#messages");
+  const chatApp = requireElement<HTMLDivElement>(root, ".chat-app");
+  const toggleSources = requireElement<HTMLButtonElement>(root, "#toggle-sources");
   persona.value = initialPersona;
+  applySourcesVisibility(chatApp, toggleSources, readShowSources());
   renderMessages(messages, state, status);
+
+  toggleSources.addEventListener("click", () => {
+    const next = toggleSources.getAttribute("aria-pressed") !== "true";
+    try {
+      localStorage.setItem(SOURCES_KEY, next ? "1" : "0");
+    } catch {
+      // localStorage が使えなくても表示切替は継続する
+    }
+    applySourcesVisibility(chatApp, toggleSources, next);
+  });
 
   persona.addEventListener("change", () => {
     if (includes(PERSONA_IDS, persona.value)) localStorage.setItem(PERSONA_KEY, persona.value);
@@ -336,6 +351,8 @@ function createAssistantMessage(response: ChatResponse, status: HTMLElement): HT
   answer.append(renderMarkdown(document, response.answer));
   assistant.append(label, answer);
   if (response.sources.length > 0) {
+    const sourcesBlock = document.createElement("div");
+    sourcesBlock.className = "answer-sources";
     const sourceTitle = document.createElement("h3");
     sourceTitle.textContent = "出典";
     const list = document.createElement("ul");
@@ -343,7 +360,8 @@ function createAssistantMessage(response: ChatResponse, status: HTMLElement): HT
     response.sources.forEach((source) => {
       list.append(createSourceItem(source));
     });
-    assistant.append(sourceTitle, list);
+    sourcesBlock.append(sourceTitle, list);
+    assistant.append(sourcesBlock);
   }
   const copy = document.createElement("button");
   copy.type = "button";
@@ -505,6 +523,22 @@ function readSession(): AuthResult | null {
     sessionStorage.removeItem(SESSION_KEY);
     return null;
   }
+}
+
+function readShowSources(): boolean {
+  try {
+    // 既定は表示（ON）。明示的に "0" のときだけ非表示。
+    return localStorage.getItem(SOURCES_KEY) !== "0";
+  } catch {
+    return true;
+  }
+}
+
+function applySourcesVisibility(chatApp: HTMLElement, toggle: HTMLButtonElement, show: boolean): void {
+  chatApp.classList.toggle("sources-hidden", !show);
+  toggle.setAttribute("aria-pressed", show ? "true" : "false");
+  // ラベルはクリック時の動作を示す（表示中は「隠す」、非表示中は「表示」）。
+  toggle.textContent = show ? "出典を隠す" : "出典を表示";
 }
 
 function parseYear(value: string): YearId | null {

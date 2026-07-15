@@ -592,6 +592,15 @@ button:disabled {
   font-size: 0.875rem;
 }
 
+/* 出典表示トグルOFF時は、回答内の出典ブロックをまとめて隠す（データは保持） */
+.chat-app.sources-hidden .answer-sources {
+  display: none;
+}
+
+#toggle-sources[aria-pressed="false"] {
+  color: var(--color-muted);
+}
+
 .source-list {
   margin: 0;
   padding-inline-start: 1.25rem;
