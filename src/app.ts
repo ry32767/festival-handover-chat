@@ -127,7 +127,10 @@ function renderChat(root: HTMLElement, session: AuthResult, demoMode = false): v
           </div>
           <div class="header-actions">
             <span class="session-status"><span aria-hidden="true"></span>${demoMode ? "UI確認モード" : "認証済み"}</span>
-            <button class="button-secondary" id="new-chat" type="button">新しい会話</button>
+            <button class="button-secondary" id="new-chat" type="button" aria-label="新しい会話">
+              <span class="btn-icon" aria-hidden="true">＋</span>
+              <span class="btn-label">新しい会話</span>
+            </button>
             <button class="button-quiet" id="logout" type="button">終了</button>
           </div>
         </div>

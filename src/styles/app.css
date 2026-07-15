@@ -242,8 +242,8 @@ button:disabled {
 .chat-app {
   display: flex;
   flex-direction: column;
+  height: 100vh; /* 動的ビューポート非対応ブラウザ向けフォールバック */
   height: 100dvh;
-  min-height: 100vh;
   width: 100%;
 }
 
@@ -318,6 +318,20 @@ button:disabled {
 .copy-button {
   width: auto;
   min-height: 40px;
+}
+
+.header-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  white-space: nowrap;
+}
+
+/* 新しい会話ボタン：既定はテキスト表示、モバイルでアイコンへ切り替える */
+#new-chat .btn-icon {
+  display: none;
+  font-size: 1.25rem;
+  line-height: 1;
 }
 
 .button-secondary,
@@ -763,14 +777,67 @@ button:disabled {
 }
 
 @media (max-width: 520px) {
+  /* ヘッダー：1行に収め、装飾情報を省いてチャット領域を最大化する */
+  .app-header {
+    padding-top: max(var(--space-2), env(safe-area-inset-top));
+    padding-bottom: var(--space-2);
+  }
+
   .app-header .bar-inner {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    gap: var(--space-2);
+  }
+
+  .app-title-block {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  /* タイトルの省略記号を効かせるため、内側のテキスト容器も縮小可能にする */
+  .app-title-block > div {
+    min-width: 0;
+  }
+
+  .app-title-mark {
+    height: 28px;
+  }
+
+  /* 副題（英字ラベル）はタイトルと重複するため省略 */
+  .app-title-block .eyebrow {
+    display: none;
   }
 
   .app-title-block h1 {
     font-size: 1.05rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
+  .header-actions {
+    flex: 0 0 auto;
+  }
+
+  .header-actions button {
+    padding-inline: var(--space-3);
+  }
+
+  /* 新しい会話は「＋」アイコンのみに圧縮（アクセシブル名はaria-labelで維持） */
+  #new-chat {
+    justify-content: center;
+    min-width: 40px;
+    padding-inline: var(--space-2);
+  }
+
+  #new-chat .btn-label {
+    display: none;
+  }
+
+  #new-chat .btn-icon {
+    display: inline-flex;
+  }
+
+  /* 認証状態バッジは残す（UI確認モードの警告として重要）。省スペース化のみ行う */
   .session-status {
     font-size: 0.7rem;
   }
@@ -779,12 +846,35 @@ button:disabled {
     display: none;
   }
 
-  .header-actions button {
-    padding-inline: var(--space-3);
+  /* 回答条件：ラベルを上に積んだ3等分の1行へ圧縮する */
+  .condition-bar .bar-inner {
+    gap: var(--space-2);
   }
 
   .condition-field {
-    flex: 1 1 46%;
+    flex: 1 1 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+  }
+
+  .condition-field label {
+    font-size: 0.7rem;
+  }
+
+  /* メッセージ：上下余白を詰めて表示量を増やす */
+  .message-stream {
+    gap: var(--space-6);
+    padding-block: var(--space-6);
+  }
+
+  /* コンポーザ：余白を詰めて入力欄を圧迫しない */
+  .composer-dock {
+    padding-top: var(--space-2);
+  }
+
+  .composer .privacy-note {
+    margin-top: var(--space-1);
   }
 }
 
