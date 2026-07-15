@@ -38,6 +38,7 @@ npm run security:scan
 npm run functions:test
 npm run knowledge:validate
 npm run knowledge:anonymization-check
+npm run knowledge:build-index
 npm run knowledge:import-llm
 npm run knowledge:verify
 npm run knowledge:sync -- --dry-run
@@ -77,6 +78,7 @@ npm run supabase:functions:serve
 - 同一事項の矛盾は片方を消さず、`90_indexes/conflicts.md`へ記録する
 - 更新前に同期対象の差分と削除予定をdry-runで確認する
 - 同期失敗時に既存の本番Storeを破壊しない。新Storeへ投入・検証後に切り替える
+- `40_compilations`を変更したら`knowledge:build-index`で`supabase/functions/_shared/knowledge-index.ts`を再生成する（出典の機械マッチング用の索引。公開安全なcompilationのみを対象とし、非公開の`30_sources`は含めない）
 
 ## ドキュメント同期規約
 - 機能、受け入れ条件、MVP、制限変更 → `docs/spec.md`

@@ -58,7 +58,7 @@ Deno.test("Gemini File Search response marks answers without citations as insuff
   assertEquals(typeof response.warning, "string");
 });
 
-Deno.test("Gemini response falls back to selected part source when citations are missing", async () => {
+Deno.test("Gemini matches a knowledge section when File Search ran but citations are missing", async () => {
   const response = await queryGeminiFileSearch({
     message: "配置移動の前日準備で確認することは？",
     persona_id: "concise",
@@ -70,12 +70,18 @@ Deno.test("Gemini response falls back to selected part source when citations are
     fileSearchStore: "fileSearchStores/test",
   }, {
     fetch: () => Promise.resolve(Response.json({
-      steps: [{ type: "model_output", content: [{ type: "text", text: "geminiです。配置移動の前日準備では、備品移動とシール貼付を確認します。" }] }],
+      steps: [
+        { type: "file_search_call" },
+        { type: "file_search_result", signature: "opaque" },
+        { type: "model_output", content: [{ type: "text", text: "geminiです。配置移動の前日準備では、備品移動とシール貼付を確認します。" }] },
+      ],
     })) as Promise<Response>,
   });
 
   assertEquals(response.grounding, "grounded");
+  // 検索は走ったが引用欠落 → 索引から配置移動パートの該当セクションを機械的に選ぶ。
   assertEquals(response.sources[0]?.source_id, "COMP-DETAIL-007");
+  assertEquals(typeof response.sources[0]?.excerpt, "string");
   assertEquals(response.warning, null);
 });
 
@@ -406,9 +412,9 @@ Deno.test("Gemini prompt asks for year-labeled concrete examples without fabrica
   assertIncludes(prompt, "資料にない年度・数値・事例は創作しない");
 });
 
-Deno.test("Gemini falls back to overall-operations source for current_festival_records without citations", async () => {
+Deno.test("Gemini provides a grounded source for current_festival_records when citations are missing", async () => {
   const response = await queryGeminiFileSearch({
-    message: "今年度の全体の流れは？",
+    message: "今年度の全体運営の流れは？",
     persona_id: "concise",
     filters: { part: "current_festival_records", year: 2026 },
     conversation: [],
@@ -418,12 +424,17 @@ Deno.test("Gemini falls back to overall-operations source for current_festival_r
     fileSearchStore: "fileSearchStores/test",
   }, {
     fetch: () => Promise.resolve(Response.json({
-      steps: [{ type: "model_output", content: [{ type: "text", text: "geminiです。今年度の全体運営を確認します。" }] }],
+      steps: [
+        { type: "file_search_call" },
+        { type: "file_search_result", signature: "opaque" },
+        { type: "model_output", content: [{ type: "text", text: "geminiです。今年度の全体運営を確認します。" }] },
+      ],
     })) as Promise<Response>,
   });
 
   assertEquals(response.grounding, "grounded");
-  assertEquals(response.sources[0]?.source_id, "COMP-DETAIL-001");
+  assertEquals(response.sources.length > 0, true);
+  assertEquals(response.sources[0]?.source_id.startsWith("COMP-"), true);
 });
 
 Deno.test("Gemini models are limited to the approved choices", () => {

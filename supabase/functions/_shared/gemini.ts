@@ -1,4 +1,5 @@
 import type { ChatRequest, ChatResponse, PartId, PersonaId, SourceReference, YearId } from "../../../shared/api-contracts.ts";
+import { KNOWLEDGE_INDEX } from "./knowledge-index.ts";
 
 export interface GeminiConfig {
   apiKey: string;
@@ -184,7 +185,7 @@ export async function queryGeminiFileSearch(
     // ときだけ再試行する。そもそも検索が実行されなかった場合は再試行しても無駄なので確定させる。
     if (parsed.sources.length > 0 || !parsed.retrieved) break;
   }
-  const sources = resolveSources(request.filters.part, parsed.answer, parsed.sources);
+  const sources = resolveSources(request.message, request.filters.part, parsed.sources, parsed.retrieved);
   const persona = personaInstructions[request.persona_id];
   return {
     answer: parsed.answer,
@@ -225,16 +226,96 @@ async function runInteraction(
   return parseInteraction(payload);
 }
 
-function resolveSources(part: PartId, answer: string, sources: readonly SourceReference[]): SourceReference[] {
+function resolveSources(
+  message: string,
+  part: PartId,
+  sources: readonly SourceReference[],
+  retrieved: boolean,
+): SourceReference[] {
+  // Geminiが file_citation を返したら、それが本当のグラウンディングなので最優先。
   const deduplicated = deduplicateSources(sources);
   if (deduplicated.length > 0) return deduplicated;
-  if (answerMentionsMissingSources(answer)) return [];
+  // File Searchが走っていない（オフトピック等）なら出典を作らない。捏造を避ける。
+  if (!retrieved) return [];
+  // 検索は走ったのに引用が欠けた場合、公開ナレッジ索引から決定的に該当セクションを選ぶ。
+  const matched = matchKnowledge(message, part);
+  if (matched.length > 0) return matched;
   const fallback = fallbackSourcesByPart[part];
   return fallback ? [fallback] : [];
 }
 
-function answerMentionsMissingSources(answer: string): boolean {
-  return /確認できません|確認できない|見当たりません|見当たらない|根拠を取得できません/u.test(answer);
+// 質問語で公開ナレッジ索引（40_compilations）を採点し、最も関連する1〜2セクションを
+// 本物の抜粋付き出典として返す。モデルの注釈欠落を機械的に補う。
+// 質問語（＝実際の問い）を最優先し、パートキーワードは補助。質問語が1つも含まれない
+// セクションは対象外にして、無関係な総括やカタログを出典として出さないようにする。
+function matchKnowledge(message: string, part: PartId): SourceReference[] {
+  const messageTerms = [...new Set(extractTerms(message))].filter((t) => t.length >= 2);
+  if (messageTerms.length === 0) return [];
+  const partKeywords = partInstructions[part].searchKeywords;
+  const scored = KNOWLEDGE_INDEX
+    .map((section) => ({ section, score: scoreSection(section, messageTerms, partKeywords, part) }))
+    .filter((entry) => entry.score > 0)
+    .sort((a, b) => b.score - a.score);
+  const results: SourceReference[] = [];
+  const seen = new Set<string>();
+  for (const { section } of scored) {
+    const key = `${section.source_id}:${section.heading}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const excerpt = extractExcerpt(section.text);
+    results.push({
+      source_id: section.source_id,
+      title: section.title,
+      heading: section.heading,
+      ...(excerpt ? { excerpt } : {}),
+    });
+    if (results.length >= 2) break;
+  }
+  return results;
+}
+
+// 日本語の内容語（漢字・カタカナの連続）と英単語を抽出。助詞などの短い語は拾わない。
+function extractTerms(message: string): string[] {
+  return message.match(/[一-龠々〇ヶ]{2,}|[ァ-ヴー]{2,}|[A-Za-z]{3,}/gu) ?? [];
+}
+
+function countOccurrences(text: string, term: string, cap: number): number {
+  let index = 0;
+  let count = 0;
+  while (count < cap) {
+    const found = text.indexOf(term, index);
+    if (found === -1) break;
+    count += 1;
+    index = found + term.length;
+  }
+  return count;
+}
+
+function scoreSection(
+  section: { text: string; heading: string; part: string },
+  messageTerms: readonly string[],
+  partKeywords: readonly string[],
+  part: PartId,
+): number {
+  let messageHits = 0;
+  let raw = 0;
+  for (const term of messageTerms) {
+    const count = countOccurrences(section.text, term, 5);
+    if (count > 0) {
+      messageHits += 1;
+      raw += count * Math.min(term.length, 6) * 3; // 質問語は重み大
+    }
+  }
+  // 質問語が1つも含まれないセクションは無関係とみなし採用しない。
+  if (messageHits === 0) return 0;
+  for (const term of partKeywords) raw += countOccurrences(section.text, term, 3); // パート語は補助的
+  // 長さで正規化し、巨大な総括セクションがキーワード数だけで上位に来るのを防ぐ。
+  let score = raw / Math.log(Math.max(section.text.length, 50));
+  // 実質ファイル名の羅列であるカタログ／索引セクションは出典として弱いので大きく減点。
+  if (/カタログ|索引|目次|一覧$/u.test(section.heading)) score *= 0.15;
+  // パートを選択している場合は、そのパートの資料を明確に優先する（フィルタ選択を尊重）。
+  if (part !== "all" && section.part === part) score *= 3;
+  return score;
 }
 
 function createPrompt(request: ChatRequest): string {

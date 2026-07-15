@@ -20,6 +20,7 @@
     "knowledge:verify": "tsx scripts/verify-gemini-file-search.ts",
     "knowledge:validate": "tsx scripts/validate-knowledge.ts",
     "knowledge:anonymization-check": "tsx scripts/anonymization-check.ts",
+    "knowledge:build-index": "tsx scripts/build-knowledge-index.ts",
     "knowledge:sync": "tsx scripts/sync-file-search.ts",
     "functions:test": "deno test --allow-env supabase/functions",
     "supabase:functions:serve": "supabase functions serve --no-verify-jwt --env-file supabase/functions/.env.local"

@@ -16,6 +16,7 @@
     "eslint.config.js",
     "scripts",
     "shared",
-    "supabase/functions/_shared/gemini.ts"
+    "supabase/functions/_shared/gemini.ts",
+    "supabase/functions/_shared/knowledge-index.ts"
   ]
 }
